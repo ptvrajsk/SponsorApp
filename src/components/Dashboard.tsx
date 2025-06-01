@@ -18,8 +18,8 @@ const Dashboard: React.FC<Props> = ({
   onEditSponsorship,
 }) => {
   const [modalImage, setModalImage] = useState<string | null>(null);
-  const [editingItemId, setEditingItemId] = useState<number | null>(null);
-  const [editingSponsorshipId, setEditingSponsorshipId] = useState<number | null>(null);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingSponsorshipId, setEditingSponsorshipId] = useState<string | null>(null);
 
   // Edit form state as strings for controlled inputs
   const [editItemForm, setEditItemForm] = useState<{

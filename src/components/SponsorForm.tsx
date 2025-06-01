@@ -39,7 +39,7 @@ const SponsorForm: React.FC<Props> = ({ items, sponsorships, onSponsor, onThank 
     setLoading(true);
     const amt = parseFloat(amount);
     await onSponsor({
-      itemId: Number(itemId),
+      itemId: itemId,
       sponsorName,
       amount: amt,
     });

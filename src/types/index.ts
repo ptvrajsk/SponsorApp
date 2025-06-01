@@ -1,15 +1,17 @@
-export interface Item {
-  id: number;
-  name: string;
-  price: number;
-  imageUrl?: string; // NEW: image data URL
-}
-
 export interface Sponsorship {
-  id: number;
-  itemId: number;
+  id: string; // was number
+  itemId: string; // was number
   sponsorName: string;
   amount: number;
 }
 
+export interface Item {
+  id: string; // was number
+  name: string;
+  price: number;
+  imageUrl?: string;
+  adminId?: string;
+}
+
 export type UserRole = "admin" | "user" | null;
+

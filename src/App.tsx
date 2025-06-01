@@ -47,7 +47,11 @@ const App: React.FC = () => {
 
   // Fetch items and sponsorships for current admin
   useEffect(() => {
-    if (!currentAdmin) return;
+    if (!currentAdmin) {
+      setItems([]);
+      setSponsorships([]);
+      return;
+    }
     const fetchItems = async () => {
       const q = query(collection(db, "items"), where("adminId", "==", currentAdmin.id));
       const snapshot = await getDocs(q);
@@ -56,8 +60,19 @@ const App: React.FC = () => {
     const fetchSponsorships = async () => {
       const q = query(collection(db, "sponsorships"), where("adminId", "==", currentAdmin.id));
       const snapshot = await getDocs(q);
-      setSponsorships(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Sponsorship[]);
+      setSponsorships(
+        snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            itemId: data.itemId ?? "",
+            sponsorName: data.sponsorName ?? "",
+            amount: data.amount ?? 0,
+          };
+        })
+      );
     };
+
     fetchItems();
     fetchSponsorships();
   }, [currentAdmin]);
@@ -106,23 +121,25 @@ const App: React.FC = () => {
 
   // Edit item
   const editItem = async (edited: Item) => {
-    await updateDoc(doc(db, "items", edited.id), edited);
-    setItems(items.map(i => (i.id === edited.id ? edited : i)));
+    const { id, ...itemData } = edited;
+    await updateDoc(doc(db, "items", id), itemData);
+    setItems(items.map(i => (i.id === id ? edited : i)));
   };
 
   // Edit sponsorship
   const editSponsorship = async (edited: Sponsorship) => {
-    await updateDoc(doc(db, "sponsorships", edited.id), edited);
-    setSponsorships(sponsorships.map(s => (s.id === edited.id ? edited : s)));
+    const { id, ...sponsorshipData } = edited;
+    await updateDoc(doc(db, "sponsorships", id), sponsorshipData);
+    setSponsorships(sponsorships.map(s => (s.id === id ? edited : s)));
   };
 
-  // You may want to create admins manually in Firestore, but here's how you could add one:
-  // (Run this once, then remove or comment out)
+
+  // Example for creating admins (run once, then remove/comment out)
   // useEffect(() => {
   //   addDoc(collection(db, "admins"), {
-  //     username: "alice",
-  //     password: encrypt("alicepass"),
-  //     passcode: encrypt("alicecode"),
+  //     username: "bob",
+  //     password: encrypt("bobpass"),
+  //     passcode: encrypt("bobcode"),
   //     displayName: "Alice",
   //   });
   // }, []);
