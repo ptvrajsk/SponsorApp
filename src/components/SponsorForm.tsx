@@ -4,7 +4,7 @@ import { Item, Sponsorship } from "../types";
 interface Props {
   items: Item[];
   sponsorships: Sponsorship[];
-  onSponsor: (sponsorship: Omit<Sponsorship, "id">) => void;
+  onSponsor: (sponsorship: Omit<Sponsorship, "id">) => Promise<void>;
   onThank: (name: string) => void;
 }
 
@@ -13,9 +13,10 @@ const SponsorForm: React.FC<Props> = ({ items, sponsorships, onSponsor, onThank 
   const [sponsorName, setSponsorName] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [full, setFull] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   const getRemaining = (id: string) => {
-    const item = items.find((i) => i.id === Number(id));
+    const item = items.find((i) => String(i.id) === String(id));
     if (!item) return 0;
     const totalSponsored = sponsorships
       .filter((s) => s.itemId === item.id)
@@ -32,27 +33,26 @@ const SponsorForm: React.FC<Props> = ({ items, sponsorships, onSponsor, onThank 
     // eslint-disable-next-line
   }, [full, itemId]);
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itemId || !sponsorName || !amount) return;
+    setLoading(true);
+    const amt = parseFloat(amount);
+    await onSponsor({
+      itemId: Number(itemId),
+      sponsorName,
+      amount: amt,
+    });
+    onThank(sponsorName);
+    setSponsorName("");
+    setAmount("");
+    setItemId("");
+    setFull(false);
+    setLoading(false);
+  };
+
   return (
-    <form
-      onSubmit={e => {
-        e.preventDefault();
-        if (!itemId || !sponsorName || !amount) return;
-        const remaining = getRemaining(itemId);
-        const amt = parseFloat(amount);
-        if (amt <= 0 || amt > remaining) return;
-        onSponsor({
-          itemId: Number(itemId),
-          sponsorName,
-          amount: amt,
-        });
-        onThank(sponsorName);
-        setSponsorName("");
-        setAmount("");
-        setItemId("");
-        setFull(false);
-      }}
-      className="bg-white p-6 rounded-xl shadow-lg border border-teal-200 animate-fade-in"
-    >
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-lg border border-teal-200 animate-fade-in">
       <h2 className="text-xl font-bold mb-3 text-teal-700">Sponsor an Item</h2>
       <div className="relative mb-3">
         <select
@@ -70,7 +70,6 @@ const SponsorForm: React.FC<Props> = ({ items, sponsorships, onSponsor, onThank 
             </option>
           ))}
         </select>
-        {/* Custom arrow */}
         <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
           <svg className="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
@@ -111,6 +110,7 @@ const SponsorForm: React.FC<Props> = ({ items, sponsorships, onSponsor, onThank 
         type="submit"
         className="bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg w-full shadow transition"
         disabled={
+          loading ||
           !itemId ||
           !sponsorName ||
           !amount ||
@@ -118,7 +118,7 @@ const SponsorForm: React.FC<Props> = ({ items, sponsorships, onSponsor, onThank 
           parseFloat(amount) > getRemaining(itemId)
         }
       >
-        Sponsor
+        {loading ? "Sponsoring..." : "Sponsor"}
       </button>
     </form>
   );

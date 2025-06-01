@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Item } from "../types";
 
 interface Props {
-  onAdd: (item: Omit<Item, "id">) => void;
+  onAdd: (item: Omit<Item, "id">) => Promise<void>;
 }
 
 const ItemForm: React.FC<Props> = ({ onAdd }) => {
@@ -11,6 +11,7 @@ const ItemForm: React.FC<Props> = ({ onAdd }) => {
   const [imageUrl, setImageUrl] = useState<string | undefined>();
   const [imageFileName, setImageFileName] = useState<string>("");
   const [imageUrlInput, setImageUrlInput] = useState<string>("");
+  const [loading, setLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,17 +27,18 @@ const ItemForm: React.FC<Props> = ({ onAdd }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !price) return;
-    // Prefer uploaded image, else use URL input, else undefined
+    setLoading(true);
     const finalImage = imageUrl || (imageUrlInput.trim() ? imageUrlInput.trim() : undefined);
-    onAdd({ name, price: parseFloat(price), imageUrl: finalImage });
+    await onAdd({ name, price: parseFloat(price), imageUrl: finalImage });
     setName("");
     setPrice("");
     setImageUrl(undefined);
     setImageFileName("");
     setImageUrlInput("");
+    setLoading(false);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -113,8 +115,9 @@ const ItemForm: React.FC<Props> = ({ onAdd }) => {
       <button
         type="submit"
         className="bg-teal-600 hover:bg-teal-700 text-white py-2 px-4 rounded-lg w-full shadow transition"
+        disabled={loading}
       >
-        Add Item
+        {loading ? "Adding..." : "Add Item"}
       </button>
     </form>
   );

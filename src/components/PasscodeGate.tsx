@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from "react";
+import { decrypt } from "../crypto"; // Adjust path as needed
 
 interface Admin {
+  id: string;
   username: string;
-  password: string;
-  passcode: string;
+  password: string; // encrypted
+  passcode: string; // encrypted
   displayName: string;
 }
 
@@ -91,9 +93,6 @@ const PasscodeGate: React.FC<Props> = ({ admins, onUser, onAdmin }) => {
               >
                 Enter
               </button>
-              <div className="text-xs text-gray-400 mt-2">
-                Try: {admins.map(a => a.passcode).join(" / ")}
-              </div>
             </form>
           ) : (
             <form
@@ -130,9 +129,6 @@ const PasscodeGate: React.FC<Props> = ({ admins, onUser, onAdmin }) => {
               >
                 Login
               </button>
-              <div className="text-xs text-gray-400 mt-2">
-                Try: {admins.map(a => `${a.username}/${a.password}`).join(" / ")}
-              </div>
             </form>
           )}
         </div>
