@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Item, Sponsorship } from "../types";
 import ProgressBar from "./ProgressBar";
+import { deleteProductAndSponsorships } from "../api/api";
 
 interface Props {
   items: Item[];
@@ -164,6 +165,16 @@ const Dashboard: React.FC<Props> = ({
                               }}
                             >
                               Edit
+                            </button>
+                          )}
+                          {isAdmin && (
+                            <button
+                              className="text-xs text-red-700 underline mb-2"
+                              onClick={() => {
+                                deleteProductAndSponsorships(item.id);
+                              }}
+                            >
+                              Delete
                             </button>
                           )}
                         </>
